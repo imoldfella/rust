@@ -182,6 +182,7 @@ macro_rules! declare_features {
 
 #[rustfmt::skip]
 declare_features! (
+    (unstable, mlir, "0.0.1", None),
     // -------------------------------------------------------------------------
     // feature-group-start: internal feature gates (no tracking issue)
     // -------------------------------------------------------------------------
