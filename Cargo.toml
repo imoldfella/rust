@@ -28,7 +28,7 @@ members = [
   "src/tools/llvm-bitcode-linker",
   "src/tools/miri",
   "src/tools/miri/cargo-miri",
-  "src/tools/miropt-test-tools",
+  "src/tools/miropt-test-tools", "src/tools/mlir",
   "src/tools/opt-dist",
   "src/tools/remote-test-client",
   "src/tools/remote-test-server",

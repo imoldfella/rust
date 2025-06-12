@@ -1,0 +1,1 @@
+./x.py build --stage 1 src/tools/mlir
