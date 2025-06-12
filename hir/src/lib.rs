@@ -10,9 +10,9 @@ mod tests {
 
     #[test]
     fn it_works() {
-        foreach 0..10 {
+        // foreach 0..10 {
  
-        };
+        // };
         let result = add(2, 2);
         assert_eq!(result, 4);
     }
