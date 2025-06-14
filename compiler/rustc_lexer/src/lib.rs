@@ -34,7 +34,6 @@ use LiteralKind::*;
 use TokenKind::*;
 use cursor::EOF_CHAR;
 pub use cursor::{Cursor, FrontmatterAllowed};
-
 use unicode_properties::UnicodeEmoji;
 pub use unicode_xid::UNICODE_VERSION as UNICODE_XID_VERSION;
 /// Parsed token.
@@ -51,13 +50,8 @@ impl Token {
         Token { kind, len }
     }
 }
-#[derive(Debug, Copy,Clone, PartialEq, Eq)]
-pub enum DialectKind {
-    Spmd,
-    Saneql,
-    Halide,
-    Other,
-}
+
+
 /// Enum representing common lexeme types.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TokenKind {
@@ -128,9 +122,7 @@ pub enum TokenKind {
         kind: LiteralKind,
         suffix_start: u32,
     },
-    DialectId {
-        kind: DialectKind,
-    },
+    DialectId ,
     DialectBlock,
     /// A lifetime, e.g. `'a`.
     Lifetime {
@@ -378,74 +370,73 @@ pub fn is_ident(string: &str) -> bool {
 }
 
 impl Cursor<'_> {
-
-
     /// Parses a token from the input string.
     pub fn advance_token(&mut self) -> Token {
         let Some(first_char) = self.bump() else {
             return Token::new(TokenKind::Eof, 0);
         };
 
-'@' => {
-    if is_id_start(self.first()) {
-        let start = self.pos_within_token();
+        let token_kind = match first_char {
+            '@' => {
+                if is_id_start(self.first()) {
+                    let _start = self.pos_within_token();
 
-        // Parse identifier after @
-        let mut ident = String::new();
-        ident.push(self.bump().unwrap());
-        while is_id_continue(self.first()) {
-            ident.push(self.bump().unwrap());
-        }
-
-        self.eat_while(is_whitespace);
-
-        if self.first() == '{' {
-            // Emit At token
-            let at_len = 1; // length of `@`
-            let id_len = ident.len(); // number of bytes (may need UTF-8 accounting)
-            let at = Token::new(TokenKind::At, at_len);
-            let id = Token::new(TokenKind::DialectId, id_len as u32);
-            self.bump(); // eat the `{`
-
-            // Emit DialectBlock token using your brace matcher
-            let mut depth = 1;
-            let mut in_string = false;
-            let mut delim = '\0';
-
-            while let Some(c) = self.bump() {
-                match c {
-                    '"' | '\'' => {
-                        if !in_string {
-                            in_string = true;
-                            delim = c;
-                        } else if c == delim {
-                            in_string = false;
-                        }
+                    // Parse identifier after @
+                    let mut ident = String::new();
+                    ident.push(self.bump().unwrap());
+                    while is_id_continue(self.first()) {
+                        ident.push(self.bump().unwrap());
                     }
-                    '{' if !in_string => depth += 1,
-                    '}' if !in_string => {
-                        depth -= 1;
-                        if depth == 0 {
-                            break;
+
+                    self.eat_while(is_whitespace);
+
+                    if self.first() == '{' {
+                        // Emit At token
+                        let at_len = 1; // length of `@`
+                        let id_len = ident.len(); // number of bytes (may need UTF-8 accounting)
+                        let at = Token::new(TokenKind::At, at_len);
+                        let _id = Token::new(TokenKind::DialectId, id_len as u32);
+                        self.bump(); // eat the `{`
+
+                        // Emit DialectBlock token using your brace matcher
+                        let mut depth = 1;
+                        let mut in_string = false;
+                        let mut delim = '\0';
+
+                        while let Some(c) = self.bump() {
+                            match c {
+                                '"' | '\'' => {
+                                    if !in_string {
+                                        in_string = true;
+                                        delim = c;
+                                    } else if c == delim {
+                                        in_string = false;
+                                    }
+                                }
+                                '{' if !in_string => depth += 1,
+                                '}' if !in_string => {
+                                    depth -= 1;
+                                    if depth == 0 {
+                                        break;
+                                    }
+                                }
+                                _ => {}
+                            }
                         }
+
+                        let block_len = self.pos_within_token() - at_len - id_len as u32;
+                        let _block = Token::new(TokenKind::DialectBlock, block_len);
+
+                        // Push the tokens in order to a pending token buffer,
+                        // or yield `at` now and queue the others
+
+                        return at; // and later yield the others
                     }
-                    _ => {}
                 }
+
+                // fallback: normal `@` usage
+                At
             }
-
-            let block_len = self.pos_within_token() - at_len - id_len as u32;
-            let block = Token::new(TokenKind::DialectBlock, block_len);
-
-            // Push the tokens in order to a pending token buffer,
-            // or yield `at` now and queue the others
-
-            return at; // and later yield the others
-        }
-    }
-
-    // fallback: normal `@` usage
-    At
-}
             c if matches!(self.frontmatter_allowed, FrontmatterAllowed::Yes)
                 && is_whitespace(c) =>
             {
@@ -539,7 +530,7 @@ impl Cursor<'_> {
             '}' => CloseBrace,
             '[' => OpenBracket,
             ']' => CloseBracket,
-            '@' => At,
+            //'@' => At,
             '#' => Pound,
             '~' => Tilde,
             '?' => Question,
