@@ -3,10 +3,12 @@ name = "mlir"
 version = "0.1.0"
 edition = "2024"
 
+[lib]
+name = "mlir"
+path = "src/lib.rs"
+
+[[bin]]
+name = "mlir"
+path = "src/main.rs"
 
 
-[dependencies]
-rustc_driver = { path = "../../../compiler/rustc_driver" }
-rustc_interface = { path = "../../../compiler/rustc_interface" }
-rustc_hir = { path = "../../../compiler/rustc_hir" }
-rustc_middle = { path = "../../../compiler/rustc_middle" }

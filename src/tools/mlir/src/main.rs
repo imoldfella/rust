@@ -1,7 +1,9 @@
 
 
+#![feature(rustc_private)]
+
+
 fn main() {
-    rustc_driver::RunCompiler::new(&std::env::args().collect::<Vec<_>>(), &mut MyCompilerCallbacks)
-        .run()
-        .unwrap();
+    let args: Vec<String> = std::env::args().collect();
+    mlir::main_with_args(args);
 }

@@ -971,6 +971,7 @@ impl<'a> Builder<'a> {
             ),
             Kind::Test => describe!(
                 crate::core::build_steps::toolstate::ToolStateCheck,
+                test::Mlir,
                 test::Tidy,
                 test::Ui,
                 test::Crashes,

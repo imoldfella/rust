@@ -508,7 +508,6 @@ bootstrap_tool!(
     FeaturesStatusDump, "src/tools/features-status-dump", "features-status-dump";
     OptimizedDist, "src/tools/opt-dist", "opt-dist", submodules = &["src/tools/rustc-perf"];
     RunMakeSupport, "src/tools/run-make-support", "run_make_support", artifact_kind = ToolArtifactKind::Library;
-    Mlir, "src/tools/mlir", "mlir";
 );
 
 /// These are the submodules that are required for rustbook to work due to
@@ -1228,7 +1227,12 @@ fn run_tool_build_step(
         ToolBuildResult { tool_path, build_compiler, target_compiler }
     }
 }
-
+tool_extended!(Mlir {
+    path: "src/tools/mlir",
+    tool_name: "mlir",
+    stable: false,
+    add_bins_to_sysroot: ["mlir"]
+});
 tool_extended!(Cargofmt {
     path: "src/tools/rustfmt",
     tool_name: "cargo-fmt",

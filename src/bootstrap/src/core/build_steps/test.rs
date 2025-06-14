@@ -3637,3 +3637,60 @@ impl Step for CollectLicenseMetadata {
         dest
     }
 }
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Mlir {
+    stage: u32,
+    host: TargetSelection,
+}
+
+impl Step for Mlir {
+    type Output = ();
+    const ONLY_HOSTS: bool = true;
+    const DEFAULT: bool = false;
+
+    fn should_run(run: ShouldRun<'_>) -> ShouldRun<'_> {
+        run.path("src/tools/mlir")
+    }
+
+    fn make_run(run: RunConfig<'_>) {
+        let stage = if run.builder.config.is_explicit_stage() || run.builder.top_stage >= 2 {
+            run.builder.top_stage
+        } else {
+            2
+        };
+
+        run.builder.ensure(Mlir { stage, host: run.target });
+    }
+
+    fn run(self, builder: &Builder<'_>) {
+        let stage = self.stage;
+        let host = self.host;
+        let compiler = builder.compiler(stage, host);
+
+        let tool_result = builder.ensure(tool::Mlir { compiler, target: self.host });
+        let compiler = tool_result.build_compiler;
+        let mut cargo = tool::prepare_tool_cargo(
+            builder,
+            compiler,
+            Mode::ToolRustc,
+            host,
+            Kind::Test,
+            "src/tools/mlir",
+            SourceType::InTree,
+            &[],
+        );
+
+        // Add any necessary env setup like Clippy does.
+        cargo.env("RUSTC_LIB_PATH", builder.rustc_libdir(compiler));
+        cargo.add_rustc_lib_path(builder);
+
+        let mut cargo = prepare_cargo_test(cargo, &[], &[], host, builder);
+
+        let _guard = builder.msg_sysroot_tool(Kind::Test, compiler.stage, "mlir", host, host);
+
+        if !cargo.run(builder) {
+            crate::exit!(1);
+        }
+    }
+}

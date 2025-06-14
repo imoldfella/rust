@@ -2340,12 +2340,6 @@ version = "0.1.0"
 [[package]]
 name = "mlir"
 version = "0.1.0"
-dependencies = [
- "rustc_driver",
- "rustc_hir",
- "rustc_interface",
- "rustc_middle",
-]
 
 [[package]]
 name = "new_debug_unreachable"
